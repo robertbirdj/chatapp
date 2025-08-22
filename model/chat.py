@@ -4,11 +4,15 @@ from typing import List, Optional
 
 from .message import Message
 
-class Chat:
-    """Manages the chat history and participants."""
+from .chat_manager import ChatManager
 
-    def __init__(self, history_file: str = "chat_history.json"):
-        self.history_file = history_file
+class Chat:
+    """Manages the chat history and participants for a single chat."""
+
+    def __init__(self, chat_name: str, chat_manager: ChatManager):
+        self.chat_name = chat_name
+        self.chat_manager = chat_manager
+        self.history_file = self.chat_manager.get_chat_history_file(self.chat_name)
         self.messages: List[Message] = []
         self.participants: List[str] = []
         # Initial load when the object is created.
@@ -40,7 +44,6 @@ class Chat:
     def _save_data(self):
         """Saves the current chat state to the JSON file."""
         with open(self.history_file, 'w') as f:
-            self.messages.sort(key=lambda m: m.timestamp)
             data = {
                 "participants": self.participants,
                 "messages": [
@@ -72,7 +75,7 @@ class Chat:
 
     def get_messages(self) -> List[Message]:
         self._load_data()
-        return sorted(self.messages, key=lambda m: m.timestamp)
+        return self.messages
 
     def _get_next_message_id(self) -> int:
         # This is an internal method, it assumes data is already loaded.
@@ -81,14 +84,14 @@ class Chat:
         return max(msg.id for msg in self.messages) + 1
 
     def add_message(self, name: str, content: str) -> Message:
+        return self.insert_message(name, content)
+
+    def insert_message(self, name: str, content: str, after_id: Optional[int] = None) -> Message:
         self._load_data()
         if name not in self.participants:
             raise ValueError(f"'{name}' is not an approved participant.")
 
         now = datetime.now()
-        last_timestamp = self.messages[-1].timestamp if self.messages else None
-        if last_timestamp and now <= last_timestamp:
-            now = last_timestamp + timedelta(microseconds=1)
 
         new_message = Message(
             id=self._get_next_message_id(),
@@ -96,7 +99,20 @@ class Chat:
             timestamp=now,
             content=content
         )
-        self.messages.append(new_message)
+
+        if after_id is None:
+            self.messages.append(new_message)
+        else:
+            index = -1
+            for i, msg in enumerate(self.messages):
+                if msg.id == after_id:
+                    index = i
+                    break
+            if index != -1:
+                self.messages.insert(index + 1, new_message)
+            else:
+                raise ValueError(f"Message with ID {after_id} not found.")
+
         self._save_data()
         return new_message
 

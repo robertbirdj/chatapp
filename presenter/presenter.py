@@ -6,6 +6,7 @@ from typing import List
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from model.chat import Chat
+from model.chat_manager import ChatManager
 from model.message import Message
 
 class Presenter:
@@ -14,7 +15,25 @@ class Presenter:
     """
     def __init__(self):
         # The presenter creates and owns the model instance
-        self.model = Chat()
+        self.chat_manager = ChatManager()
+        self.chat_name = "default"
+        if not self.chat_manager.get_chat_list():
+            self.chat_manager.create_chat(self.chat_name)
+
+        self.model = Chat(self.chat_name, self.chat_manager)
+
+    def get_chat_list(self) -> List[str]:
+        """Gets the list of available chats."""
+        return self.chat_manager.get_chat_list()
+
+    def switch_chat(self, chat_name: str):
+        """Switches to a different chat."""
+        self.chat_name = chat_name
+        self.model = Chat(self.chat_name, self.chat_manager)
+
+    def create_chat(self, chat_name: str):
+        """Creates a new chat."""
+        self.chat_manager.create_chat(chat_name)
 
     def get_participants(self) -> List[str]:
         """Gets the list of participants from the model."""
@@ -37,6 +56,10 @@ class Presenter:
     def add_message(self, name: str, content: str) -> Message:
         """Adds a message via the model."""
         return self.model.add_message(name, content)
+
+    def insert_message(self, name: str, content: str, after_id: int) -> Message:
+        """Inserts a message via the model."""
+        return self.model.insert_message(name, content, after_id)
 
     def edit_message(self, message_id: int, new_content: str) -> None:
         """Edits a message via the model."""
