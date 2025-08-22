@@ -7,23 +7,29 @@ from datetime import datetime, timedelta
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from model.chat import Chat
+from model.chat_manager import ChatManager
 from model.message import Message
 
-TEST_HISTORY_FILE = "test_chat_history.json"
+TEST_CHAT_NAME = "test_chat"
 
 class TestChatModel(unittest.TestCase):
 
     def setUp(self):
         """Set up a clean environment for each test."""
+        self.chat_manager = ChatManager(history_dir=".")
         # Ensure the test file does not exist before a test
-        if os.path.exists(TEST_HISTORY_FILE):
-            os.remove(TEST_HISTORY_FILE)
-        self.chat = Chat(history_file=TEST_HISTORY_FILE)
+        history_file = self.chat_manager.get_chat_history_file(TEST_CHAT_NAME)
+        if os.path.exists(history_file):
+            os.remove(history_file)
+
+        self.chat_manager.create_chat(TEST_CHAT_NAME)
+        self.chat = Chat(TEST_CHAT_NAME, self.chat_manager)
 
     def tearDown(self):
         """Clean up the environment after each test."""
-        if os.path.exists(TEST_HISTORY_FILE):
-            os.remove(TEST_HISTORY_FILE)
+        history_file = self.chat_manager.get_chat_history_file(TEST_CHAT_NAME)
+        if os.path.exists(history_file):
+            os.remove(history_file)
 
     def test_add_and_get_participant(self):
         """Test adding participants to the chat."""
@@ -107,8 +113,8 @@ class TestChatModel(unittest.TestCase):
         self.chat.add_participant("Alice")
         self.chat.add_message("Alice", "This is a test.")
 
-        # Create a new Chat instance with the same file
-        new_chat = Chat(history_file=TEST_HISTORY_FILE)
+        # Create a new Chat instance with the same chat name and manager
+        new_chat = Chat(TEST_CHAT_NAME, self.chat_manager)
         self.assertIn("Alice", new_chat.get_participants())
         self.assertEqual(len(new_chat.get_messages()), 1)
         self.assertEqual(new_chat.get_messages()[0].content, "This is a test.")

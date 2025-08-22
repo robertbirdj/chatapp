@@ -30,3 +30,12 @@ class ChatManager:
 
         with open(history_file, 'w') as f:
             json.dump({"participants": [], "messages": []}, f, indent=4)
+
+    def get_chat(self, chat_name: str) -> dict:
+        """Returns the content of a chat history file."""
+        history_file = self.get_chat_history_file(chat_name)
+        if not os.path.exists(history_file):
+            raise ValueError(f"Chat '{chat_name}' not found.")
+
+        with open(history_file, 'r') as f:
+            return json.load(f)
