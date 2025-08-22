@@ -33,10 +33,34 @@ def index():
     return jsonify({"status": "MCP Server is running"}), 200
 
 @app.route("/chats", methods=["GET"])
-def view_chats():
-    """Returns the entire chat history."""
-    messages = presenter.get_messages()
-    return jsonify([format_message(msg) for msg in messages]), 200
+def list_chats():
+    """Returns a list of available chats."""
+    chats = presenter.get_chat_list()
+    return jsonify(chats), 200
+
+@app.route("/chats/<string:chat_name>", methods=["GET"])
+def view_chat(chat_name: str):
+    """Returns the entire chat history for a given chat."""
+    try:
+        presenter.switch_chat(chat_name)
+        messages = presenter.get_messages()
+        return jsonify([format_message(msg) for msg in messages]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404
+
+@app.route("/chats", methods=["POST"])
+def create_chat():
+    """Creates a new chat."""
+    data = request.get_json()
+    if not data or "name" not in data:
+        return jsonify({"error": "Missing 'name' in request body"}), 400
+
+    chat_name = data["name"]
+    try:
+        presenter.create_chat(chat_name)
+        return jsonify({"message": f"Chat '{chat_name}' created successfully."}), 201
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
 @app.route("/participants", methods=["GET"])
 def view_participants():
@@ -86,6 +110,24 @@ def add_message():
         return jsonify(format_message(new_message)), 201
     except ValueError as e:
         # This happens if the participant is not approved
+        return jsonify({"error": str(e)}), 400
+
+@app.route("/messages/insert", methods=["POST"])
+def insert_message():
+    """Inserts a new message after a specified message ID."""
+    data = request.get_json()
+    if not data or "name" not in data or "message" not in data or "after_id" not in data:
+        return jsonify({"error": "Request body must contain 'name', 'message', and 'after_id'"}), 400
+
+    name = data["name"]
+    content = data["message"]
+    after_id = data["after_id"]
+
+    try:
+        new_message = presenter.insert_message(name, content, after_id)
+        return jsonify(format_message(new_message)), 201
+    except ValueError as e:
+        # This happens if the participant is not approved or the after_id is not found
         return jsonify({"error": str(e)}), 400
 
 @app.route("/messages/<int:message_id>", methods=["PUT"])

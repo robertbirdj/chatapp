@@ -30,14 +30,27 @@ The MCP server exposes the following tools. Use these tools to interact with the
 
 ---
 
-### **Tool: `view_chats`**
-- **Description**: Returns the entire chat history, sorted by timestamp.
+### **Tool: `list_chats`**
+- **Description**: Returns a list of available chat names.
 - **Method**: `GET`
 - **Endpoint**: `http://localhost:5000/chats`
 - **Parameters**: None
 
+### **Tool: `create_chat`**
+- **Description**: Creates a new chat.
+- **Method**: `POST`
+- **Endpoint**: `http://localhost:5000/chats`
+- **Body**: JSON object with a `name` key for the new chat.
+- **Example**: `curl -X POST -H "Content-Type: application/json" -d '{"name": "new-chat"}' http://localhost:5000/chats`
+
+### **Tool: `view_chat`**
+- **Description**: Returns the entire chat history for a specific chat. **You must call this to select a chat to work with.**
+- **Method**: `GET`
+- **Endpoint**: `http://localhost:5000/chats/<chat_name>`
+- **Parameters**: None
+
 ### **Tool: `view_participants`**
-- **Description**: Returns the current list of approved participants in the chat.
+- **Description**: Returns the current list of approved participants in the current chat.
 - **Method**: `GET`
 - **Endpoint**: `http://localhost:5000/participants`
 - **Parameters**: None
@@ -63,6 +76,13 @@ The MCP server exposes the following tools. Use these tools to interact with the
 - **Body**: JSON object with `name` and `message` keys.
 - **Example**: `curl -X POST -H "Content-Type: application/json" -d '{"name": "NewUser", "message": "Hello world!"}' http://localhost:5000/messages`
 
+### **Tool: `insert_message`**
+- **Description**: Inserts a new message after a specified message ID.
+- **Method**: `POST`
+- **Endpoint**: `http://localhost:5000/messages/insert`
+- **Body**: JSON object with `name`, `message`, and `after_id` keys.
+- **Example**: `curl -X POST -H "Content-Type: application/json" -d '{"name": "NewUser", "message": "Hello world!", "after_id": 1}' http://localhost:5000/messages/insert`
+
 ### **Tool: `edit_message`**
 - **Description**: Edits the content of a specific message. **This action requires a two-step confirmation.**
 - **Method**: `PUT`
@@ -83,3 +103,11 @@ The MCP server exposes the following tools. Use these tools to interact with the
     2.  **User Confirmation**: You must prompt the human user for confirmation.
     3.  **Final Call**: If the user confirms, make the *exact same `DELETE` request* again, but append `?confirm=true` to the URL.
 - **Example (Final Call)**: `curl -X DELETE "http://localhost:5000/messages/1?confirm=true"`
+
+---
+
+## 4. Roleplaying Instructions
+
+When asked to roleplay, you should adopt the persona of the requested character. The user's messages will be your own responses. You should automatically generate responses from the character you are roleplaying as and add them to the chat.
+
+For example, if the user says "I am now roleplaying as a pirate", you should respond with something like "Ahoy, matey! What be our heading?". You should continue to respond as the character until the user tells you to stop.
