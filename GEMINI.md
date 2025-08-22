@@ -24,6 +24,13 @@ python3 mcp_server/server.py &
 ```
 The server will run on `http://localhost:5000`.
 
+**Step 3: Run the GUI (Optional)**
+The GUI allows a human user to see the chat in real-time. This is not required for you to do your work, but it can be helpful for the user. To start the GUI, run the following command in a separate terminal from the project root:
+
+```bash
+python3 main.py
+```
+
 ## 3. Tool Manifest
 
 The MCP server exposes the following tools. Use these tools to interact with the chat application.
