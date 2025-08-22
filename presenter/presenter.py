@@ -35,6 +35,10 @@ class Presenter:
         """Creates a new chat."""
         self.chat_manager.create_chat(chat_name)
 
+    def get_chat(self, chat_name: str) -> dict:
+        """Gets the details of a specific chat."""
+        return self.chat_manager.get_chat(chat_name)
+
     def get_participants(self) -> List[str]:
         """Gets the list of participants from the model."""
         return self.model.get_participants()

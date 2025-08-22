@@ -50,7 +50,7 @@ def view_chat(chat_name: str):
 
 @app.route("/chats", methods=["POST"])
 def create_chat():
-    """Creates a new chat."""
+    """Creates a new chat and returns its details."""
     data = request.get_json()
     if not data or "name" not in data:
         return jsonify({"error": "Missing 'name' in request body"}), 400
@@ -58,7 +58,11 @@ def create_chat():
     chat_name = data["name"]
     try:
         presenter.create_chat(chat_name)
-        return jsonify({"message": f"Chat '{chat_name}' created successfully."}), 201
+        # After creating the chat, switch to it and get its (empty) details
+        chat_details = presenter.get_chat(chat_name)
+        # We also need to add the chat name to the response
+        chat_details["name"] = chat_name
+        return jsonify(chat_details), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
