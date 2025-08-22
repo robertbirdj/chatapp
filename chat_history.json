@@ -1,0 +1,13 @@
+{
+    "participants": [
+        "TestUser"
+    ],
+    "messages": [
+        {
+            "id": 1,
+            "name": "TestUser",
+            "timestamp": "2025-08-22T17:55:12.042987",
+            "content": "Testing sync!"
+        }
+    ]
+}
